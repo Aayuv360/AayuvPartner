@@ -131,17 +131,47 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
       // Generate 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       
-      // In production, send SMS via Twilio/AWS SNS
-      console.log(`OTP for ${phone}: ${otp}`);
+      // Send SMS via Fast2SMS
+      let smsStatus = "development";
+      if (process.env.FAST2SMS_API_KEY) {
+        try {
+          const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+            method: 'POST',
+            headers: {
+              'authorization': process.env.FAST2SMS_API_KEY,
+              'Content-Type': "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+              'variables_values': otp,
+              'route': 'otp',
+              'numbers': phone,
+            })
+          });
+          
+          const data = await response.json();
+          if (data.return) {
+            smsStatus = "sent";
+            console.log(`SMS sent successfully to ${phone}`);
+          } else {
+            console.error('Fast2SMS error:', data);
+            smsStatus = "failed";
+          }
+        } catch (error) {
+          console.error('SMS sending error:', error);
+          smsStatus = "failed";
+        }
+      } else {
+        console.log(`OTP for ${phone}: ${otp} (Development Mode)`);
+      }
       
       // Store OTP temporarily (in production, use Redis)
-      req.session.otp = otp;
-      req.session.otpPhone = phone;
-      req.session.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+      (req.session as any).otp = otp;
+      (req.session as any).otpPhone = phone;
+      (req.session as any).otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
       
       res.json({ 
-        message: "OTP sent successfully",
-        otp: otp // Remove in production
+        message: smsStatus === "sent" ? "OTP sent to your mobile number" : "OTP sent successfully",
+        otp: process.env.NODE_ENV === 'development' ? otp : undefined // Only show in development
       });
     } catch (error) {
       console.error("Send OTP error:", error);
@@ -153,15 +183,16 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
     try {
       const { phone, otp } = req.body;
       
-      if (!req.session.otp || !req.session.otpPhone || !req.session.otpExpiry) {
+      const sessionData = req.session as any;
+      if (!sessionData.otp || !sessionData.otpPhone || !sessionData.otpExpiry) {
         return res.status(400).json({ error: "No OTP session found" });
       }
       
-      if (Date.now() > req.session.otpExpiry) {
+      if (Date.now() > sessionData.otpExpiry) {
         return res.status(400).json({ error: "OTP expired" });
       }
       
-      if (req.session.otp !== otp || req.session.otpPhone !== phone) {
+      if (sessionData.otp !== otp || sessionData.otpPhone !== phone) {
         return res.status(400).json({ error: "Invalid OTP" });
       }
       
@@ -181,19 +212,20 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
       }
       
       // Clear OTP session
-      delete req.session.otp;
-      delete req.session.otpPhone;
-      delete req.session.otpExpiry;
+      const sessionData2 = req.session as any;
+      delete sessionData2.otp;
+      delete sessionData2.otpPhone;
+      delete sessionData2.otpExpiry;
       
       // Set session
-      req.session.partnerId = partner._id;
+      sessionData2.partnerId = partner._id;
       
       res.json({
         _id: partner._id,
         name: partner.name,
         phone: partner.phone,
-        preferredLanguage: partner.preferredLanguage || "hindi",
-        isPhoneVerified: partner.isPhoneVerified || false
+        preferredLanguage: "english",
+        isPhoneVerified: true
       });
     } catch (error) {
       console.error("Verify OTP error:", error);

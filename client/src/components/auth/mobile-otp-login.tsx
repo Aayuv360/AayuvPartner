@@ -58,8 +58,8 @@ export default function MobileOtpLogin() {
     },
     onError: (error: any) => {
       toast({
-        title: "त्रुटि",
-        description: error.message || "OTP भेजने में समस्या हुई",
+        title: "Error",
+        description: error.message || "Failed to send OTP",
         variant: "destructive"
       });
     }
@@ -80,8 +80,8 @@ export default function MobileOtpLogin() {
     },
     onError: (error: any) => {
       toast({
-        title: "गलत OTP",
-        description: "कृपया सही OTP डालें",
+        title: "Invalid OTP",
+        description: "Please enter the correct OTP",
         variant: "destructive"
       });
     }

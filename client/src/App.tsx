@@ -9,8 +9,7 @@ import Home from "@/pages/home";
 import Orders from "@/pages/orders";
 import Earnings from "@/pages/earnings";
 import Profile from "@/pages/profile";
-import Login from "@/pages/auth/login";
-import Register from "@/pages/auth/register";
+import MobileOtpLogin from "@/components/auth/mobile-otp-login";
 
 function AppRouter() {
   const { isAuthenticated } = useAuth();
@@ -18,10 +17,9 @@ function AppRouter() {
   if (!isAuthenticated) {
     return (
       <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/auth" element={<MobileOtpLogin />} />
+        <Route path="/" element={<Navigate to="/auth" replace />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     );
   }
@@ -32,8 +30,7 @@ function AppRouter() {
       <Route path="/orders" element={<Orders />} />
       <Route path="/earnings" element={<Earnings />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/login" element={<Navigate to="/" replace />} />
-      <Route path="/register" element={<Navigate to="/" replace />} />
+      <Route path="/auth" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

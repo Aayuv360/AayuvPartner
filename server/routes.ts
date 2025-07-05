@@ -119,6 +119,124 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
     }
   });
 
+  // Mobile OTP Authentication Routes
+  app.post("/api/auth/send-otp", async (req: Request, res: Response) => {
+    try {
+      const { phone } = req.body;
+      
+      if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
+        return res.status(400).json({ error: "Valid Indian mobile number required" });
+      }
+
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // In production, send SMS via Twilio/AWS SNS
+      console.log(`OTP for ${phone}: ${otp}`);
+      
+      // Store OTP temporarily (in production, use Redis)
+      req.session.otp = otp;
+      req.session.otpPhone = phone;
+      req.session.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+      
+      res.json({ 
+        message: "OTP sent successfully",
+        otp: otp // Remove in production
+      });
+    } catch (error) {
+      console.error("Send OTP error:", error);
+      res.status(500).json({ error: "Failed to send OTP" });
+    }
+  });
+
+  app.post("/api/auth/verify-otp", async (req: Request, res: Response) => {
+    try {
+      const { phone, otp } = req.body;
+      
+      if (!req.session.otp || !req.session.otpPhone || !req.session.otpExpiry) {
+        return res.status(400).json({ error: "No OTP session found" });
+      }
+      
+      if (Date.now() > req.session.otpExpiry) {
+        return res.status(400).json({ error: "OTP expired" });
+      }
+      
+      if (req.session.otp !== otp || req.session.otpPhone !== phone) {
+        return res.status(400).json({ error: "Invalid OTP" });
+      }
+      
+      // Check if user exists
+      let partner = await storage.getDeliveryPartnerByPhone(phone);
+      
+      if (!partner) {
+        // Create temporary partner for registration
+        partner = await storage.createDeliveryPartner({
+          name: `New Partner ${phone}`,
+          phone: phone,
+          password: "temp",
+          email: `${phone}@temp.com`,
+          preferredLanguage: "hindi",
+          isPhoneVerified: true
+        });
+      }
+      
+      // Clear OTP session
+      delete req.session.otp;
+      delete req.session.otpPhone;
+      delete req.session.otpExpiry;
+      
+      // Set session
+      req.session.partnerId = partner._id;
+      
+      res.json({
+        _id: partner._id,
+        name: partner.name,
+        phone: partner.phone,
+        preferredLanguage: partner.preferredLanguage || "hindi",
+        isPhoneVerified: partner.isPhoneVerified || false
+      });
+    } catch (error) {
+      console.error("Verify OTP error:", error);
+      res.status(500).json({ error: "Failed to verify OTP" });
+    }
+  });
+
+  app.post("/api/auth/mobile-register", async (req: Request, res: Response) => {
+    try {
+      const { phone, name, preferredLanguage, vehicleType, vehicleNumber, licenseNumber, aadhaarNumber, panNumber, upiId } = req.body;
+      
+      const partner = await storage.getDeliveryPartnerByPhone(phone);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner not found" });
+      }
+      
+      const updatedPartner = await storage.updateDeliveryPartner(partner._id, {
+        name,
+        preferredLanguage,
+        vehicleType,
+        vehicleNumber,
+        licenseNumber,
+        aadhaarNumber,
+        panNumber,
+        upiId,
+        isPhoneVerified: true
+      });
+      
+      req.session.partnerId = updatedPartner?._id;
+      
+      res.json({
+        _id: updatedPartner?._id,
+        name: updatedPartner?.name,
+        phone: updatedPartner?.phone,
+        preferredLanguage: updatedPartner?.preferredLanguage || "hindi",
+        isPhoneVerified: true
+      });
+    } catch (error) {
+      console.error("Mobile register error:", error);
+      res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       const validatedData = loginSchema.parse(req.body);

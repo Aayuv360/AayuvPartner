@@ -16,11 +16,21 @@ const deliveryPartnerSchema = new Schema({
   // India-specific fields
   isPhoneVerified: { type: Boolean, default: false },
   aadhaarNumber: { type: String, default: null },
+  aadhaarDocument: { type: String, default: null },
   panNumber: { type: String, default: null },
-  preferredLanguage: { type: String, enum: ['hindi', 'english'], default: 'hindi' },
+  panDocument: { type: String, default: null },
+  drivingLicenseNumber: { type: String, default: null },
+  drivingLicenseDocument: { type: String, default: null },
+  vehicleRegistrationNumber: { type: String, default: null },
+  vehicleRegistrationDocument: { type: String, default: null },
   bankAccountNumber: { type: String, default: null },
-  ifscCode: { type: String, default: null },
-  upiId: { type: String, default: null }
+  bankIFSC: { type: String, default: null },
+  upiId: { type: String, default: null },
+  verificationStatus: { 
+    type: String, 
+    enum: ['pending', 'in_review', 'verified', 'rejected'],
+    default: 'pending'
+  }
 }, {
   timestamps: true
 });
@@ -194,6 +204,21 @@ export interface IDeliveryPartner extends Document {
   rating: string;
   totalDeliveries: number;
   totalEarnings: string;
+  
+  // Document verification fields
+  aadhaarNumber?: string;
+  aadhaarDocument?: string;
+  panNumber?: string;
+  panDocument?: string;
+  drivingLicenseNumber?: string;
+  drivingLicenseDocument?: string;
+  vehicleRegistrationNumber?: string;
+  vehicleRegistrationDocument?: string;
+  bankAccountNumber?: string;
+  bankIFSC?: string;
+  upiId?: string;
+  verificationStatus: 'pending' | 'in_review' | 'verified' | 'rejected';
+  
   createdAt: Date;
   updatedAt: Date;
 }

@@ -79,12 +79,23 @@ export default function MobileOtpLogin() {
       return response.json();
     },
     onSuccess: (data: VerifyOtpResponse) => {
+      console.log('OTP verification successful:', data);
+      
       if (data.name.includes('Partner')) {
         // New user, needs registration
+        toast({
+          title: "Phone Verified",
+          description: "Please complete your registration"
+        });
         setIsNewUser(true);
         setStep('register');
       } else {
         // Existing user, login successful
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${data.name}!`
+        });
+        console.log('Calling login with:', data);
         login(data);
       }
     },

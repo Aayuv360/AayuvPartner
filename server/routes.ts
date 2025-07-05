@@ -188,17 +188,39 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
     try {
       const { phone, otp } = req.body;
       
-      const sessionData = req.session as any;
-      if (!sessionData.otp || !sessionData.otpPhone || !sessionData.otpExpiry) {
-        return res.status(400).json({ error: "No OTP session found" });
-      }
-      
-      if (Date.now() > sessionData.otpExpiry) {
-        return res.status(400).json({ error: "OTP expired" });
-      }
-      
-      if (sessionData.otp !== otp || sessionData.otpPhone !== phone) {
-        return res.status(400).json({ error: "Invalid OTP" });
+      // Development mode: Accept 123456 as universal test OTP
+      if (process.env.NODE_ENV === 'development' && otp === '123456') {
+        console.log(`Development mode: Universal test OTP accepted for ${phone}`);
+      } else {
+        const sessionData = req.session as any;
+        
+        console.log('OTP Verification Debug:', {
+          receivedPhone: phone,
+          receivedOTP: otp,
+          sessionOTP: sessionData.otp,
+          sessionPhone: sessionData.otpPhone,
+          sessionExpiry: sessionData.otpExpiry,
+          currentTime: Date.now()
+        });
+        
+        if (!sessionData.otp || !sessionData.otpPhone || !sessionData.otpExpiry) {
+          return res.status(400).json({ error: "No OTP session found" });
+        }
+        
+        if (Date.now() > sessionData.otpExpiry) {
+          return res.status(400).json({ error: "OTP expired" });
+        }
+        
+        if (sessionData.otp !== otp || sessionData.otpPhone !== phone) {
+          return res.status(400).json({ 
+            error: "Invalid OTP",
+            debug: process.env.NODE_ENV === 'development' ? {
+              expected: sessionData.otp,
+              received: otp,
+              phoneMatch: sessionData.otpPhone === phone
+            } : undefined
+          });
+        }
       }
       
       // Check if user exists

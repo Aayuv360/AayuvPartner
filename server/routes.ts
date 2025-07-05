@@ -173,6 +173,7 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
       (req.session as any).otp = otp;
       (req.session as any).otpPhone = phone;
       (req.session as any).otpExpiry = Date.now() + 30 * 60 * 1000; // 30 minutes
+      (req.session as any).otpUsed = false; // Track if OTP was already used
       
       // Display OTP clearly in server console for development
       console.log('\n' + '🔐='.repeat(25));
@@ -207,11 +208,16 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
           sessionOTP: sessionData.otp,
           sessionPhone: sessionData.otpPhone,
           sessionExpiry: sessionData.otpExpiry,
+          otpUsed: sessionData.otpUsed,
           currentTime: Date.now()
         });
         
         if (!sessionData.otp || !sessionData.otpPhone || !sessionData.otpExpiry) {
           return res.status(400).json({ error: "No OTP session found" });
+        }
+        
+        if (sessionData.otpUsed) {
+          return res.status(400).json({ error: "OTP already used" });
         }
         
         if (Date.now() > sessionData.otpExpiry) {

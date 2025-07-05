@@ -172,7 +172,7 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
       // Store OTP temporarily (in production, use Redis)
       (req.session as any).otp = otp;
       (req.session as any).otpPhone = phone;
-      (req.session as any).otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+      (req.session as any).otpExpiry = Date.now() + 30 * 60 * 1000; // 30 minutes
       
       // Display OTP clearly in server console for development
       console.log('\n' + '🔐='.repeat(25));

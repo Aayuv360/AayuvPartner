@@ -41,8 +41,10 @@ export default function MobileOtpLogin() {
   const { login } = useAuth();
 
   const sendOtpMutation = useMutation({
-    mutationFn: (phone: string) => 
-      apiRequest('POST', '/api/auth/send-otp', { phone }),
+    mutationFn: async (phone: string) => {
+      const response = await apiRequest('POST', '/api/auth/send-otp', { phone });
+      return response.json();
+    },
     onSuccess: (data: SendOtpResponse) => {
       // Log OTP to console in development
       if (data.otp) {
@@ -72,8 +74,10 @@ export default function MobileOtpLogin() {
   });
 
   const verifyOtpMutation = useMutation({
-    mutationFn: ({ phone, otp }: { phone: string; otp: string }) =>
-      apiRequest('POST', '/api/auth/verify-otp', { phone, otp }),
+    mutationFn: async ({ phone, otp }: { phone: string; otp: string }) => {
+      const response = await apiRequest('POST', '/api/auth/verify-otp', { phone, otp });
+      return response.json();
+    },
     onSuccess: (data: VerifyOtpResponse) => {
       if (data.name.includes('Partner')) {
         // New user, needs registration
@@ -94,8 +98,10 @@ export default function MobileOtpLogin() {
   });
 
   const registerMutation = useMutation({
-    mutationFn: (formData: any) =>
-      apiRequest('POST', '/api/auth/mobile-register', formData),
+    mutationFn: async (formData: any) => {
+      const response = await apiRequest('POST', '/api/auth/mobile-register', formData);
+      return response.json();
+    },
     onSuccess: (data: VerifyOtpResponse) => {
       toast({
         title: "Registration Successful",

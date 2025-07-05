@@ -114,7 +114,17 @@ export class DatabaseStorage implements IStorage {
 
   // Delivery Partner methods
   async getDeliveryPartner(id: string): Promise<IDeliveryPartner | null> {
-    return await DeliveryPartner.findById(id);
+    try {
+      // Check if it's a valid ObjectId
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log('Invalid ObjectId format:', id);
+        return null;
+      }
+      return await DeliveryPartner.findById(id);
+    } catch (error) {
+      console.log('Error finding partner by ID:', error);
+      return null;
+    }
   }
 
   async getDeliveryPartnerByEmail(email: string): Promise<IDeliveryPartner | null> {

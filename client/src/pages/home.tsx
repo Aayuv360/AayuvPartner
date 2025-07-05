@@ -3,14 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import Header from '@/components/layout/header';
 import BottomNavigation from '@/components/layout/bottom-navigation';
 import StatsGrid from '@/components/dashboard/stats-grid';
-import ActiveOrderCard from '@/components/order/active-order-card';
+import DeliveryTracking from '@/components/delivery/delivery-tracking';
 import RecentDeliveries from '@/components/dashboard/recent-deliveries';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useGeolocation } from '@/hooks/use-geolocation';
-import type { Order, Customer } from '@shared/schema';
+import type { IOrder, ICustomer } from '@shared/schema';
 
 export default function Home() {
-  const { data: activeOrder, isLoading: isLoadingOrder } = useQuery<(Order & { customer?: Customer }) | null>({
+  const { data: activeOrder, isLoading: isLoadingOrder } = useQuery<(IOrder & { customer?: ICustomer }) | null>({
     queryKey: ['/api/orders/active'],
   });
 
@@ -40,7 +40,7 @@ export default function Home() {
               </div>
             </div>
           ) : activeOrder ? (
-            <ActiveOrderCard order={activeOrder} />
+            <DeliveryTracking order={activeOrder} />
           ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
               <p className="text-gray-500">No active orders</p>

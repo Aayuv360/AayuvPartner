@@ -46,7 +46,7 @@ export default function MobileOtpLogin() {
     onSuccess: (data: SendOtpResponse) => {
       toast({
         title: "OTP Sent",
-        description: `OTP has been sent to ${phone}`,
+        description: data.otp ? `OTP: ${data.otp} (Development Mode)` : `OTP has been sent to ${phone}`,
       });
       
       // Auto-fill OTP in development

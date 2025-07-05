@@ -335,6 +335,85 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
     }
   });
 
+  // Helper function to calculate distance between two coordinates
+  function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  // Delivery zones endpoint
+  app.get("/api/delivery-zones", (req: Request, res: Response) => {
+    const { lat, lng } = req.query;
+    
+    // Mock delivery zones with realistic data
+    const zones = [
+      {
+        id: "zone-1",
+        name: "Bandra West Commercial",
+        centerLat: 19.0596,
+        centerLng: 72.8295,
+        radius: 1500,
+        demandLevel: "surge",
+        averageEarnings: "₹220/hr",
+        activeOrders: 15,
+        estimatedWaitTime: 8,
+        distance: lat && lng ? calculateDistance(parseFloat(lat as string), parseFloat(lng as string), 19.0596, 72.8295) : 2.3,
+        surgeMultiplier: 2.1
+      },
+      {
+        id: "zone-2",
+        name: "Andheri East IT Hub",
+        centerLat: 19.1136,
+        centerLng: 72.8697,
+        radius: 2000,
+        demandLevel: "high",
+        averageEarnings: "₹180/hr",
+        activeOrders: 11,
+        estimatedWaitTime: 12,
+        distance: lat && lng ? calculateDistance(parseFloat(lat as string), parseFloat(lng as string), 19.1136, 72.8697) : 3.7,
+        surgeMultiplier: 1.6
+      },
+      {
+        id: "zone-3",
+        name: "Powai Tech Park",
+        centerLat: 19.1197,
+        centerLng: 72.9081,
+        radius: 1800,
+        demandLevel: "medium",
+        averageEarnings: "₹145/hr",
+        activeOrders: 7,
+        estimatedWaitTime: 18,
+        distance: lat && lng ? calculateDistance(parseFloat(lat as string), parseFloat(lng as string), 19.1197, 72.9081) : 5.2
+      },
+      {
+        id: "zone-4",
+        name: "Malad West Residential",
+        centerLat: 19.1875,
+        centerLng: 72.8259,
+        radius: 2200,
+        demandLevel: "low",
+        averageEarnings: "₹120/hr",
+        activeOrders: 4,
+        estimatedWaitTime: 25,
+        distance: lat && lng ? calculateDistance(parseFloat(lat as string), parseFloat(lng as string), 19.1875, 72.8259) : 7.8
+      }
+    ];
+
+    // Sort by distance if location provided
+    if (lat && lng) {
+      zones.sort((a, b) => a.distance - b.distance);
+    }
+
+    res.json(zones);
+  });
+
   // WebSocket broadcast functions
   function broadcastLocationUpdate(partnerId: string, latitude: string, longitude: string) {
     const message = JSON.stringify({

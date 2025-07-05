@@ -9,6 +9,7 @@ import SurgeIndicator from '@/components/surge/surge-indicator';
 import DailyPayout from '@/components/earnings/daily-payout';
 import ShiftManager from '@/components/shifts/shift-manager';
 import PartnerLocation from '@/components/maps/partner-location';
+import DeliveryZones from '@/components/maps/delivery-zones';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { IOrder, ICustomer } from '@shared/schema';
@@ -30,6 +31,11 @@ export default function Home() {
         {/* Partner Location */}
         <section className="px-4 mb-4">
           <PartnerLocation />
+        </section>
+
+        {/* Delivery Zones */}
+        <section className="px-4 mb-4">
+          <DeliveryZones />
         </section>
 
         {/* Stats Dashboard */}

@@ -21,7 +21,7 @@ export default function PartnerLocation({
 
   const updateLocationMutation = useMutation({
     mutationFn: async ({ lat, lng }: { lat: number; lng: number }) => {
-      return apiRequest('/api/partner/location', 'POST', {
+      return apiRequest('POST', '/api/partner/location', {
         latitude: lat.toString(),
         longitude: lng.toString()
       });

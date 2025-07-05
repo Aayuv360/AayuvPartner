@@ -9,17 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import type { Order, Customer } from '@shared/schema';
+import type { IOrder, ICustomer } from '@shared/schema';
 
 export default function Orders() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const { data: availableOrders, isLoading: isLoadingAvailable } = useQuery<(Order & { customer?: Customer })[]>({
+  const { data: availableOrders, isLoading: isLoadingAvailable } = useQuery<(IOrder & { customer?: ICustomer })[]>({
     queryKey: ['/api/orders/available'],
   });
 
-  const { data: orderHistory, isLoading: isLoadingHistory } = useQuery<(Order & { customer?: Customer })[]>({
+  const { data: orderHistory, isLoading: isLoadingHistory } = useQuery<(IOrder & { customer?: ICustomer })[]>({
     queryKey: ['/api/orders/history'],
   });
 
@@ -45,7 +45,7 @@ export default function Orders() {
     },
   });
 
-  const OrderCard = ({ order, showAcceptButton = false }: { order: Order & { customer?: Customer }, showAcceptButton?: boolean }) => {
+  const OrderCard = ({ order, showAcceptButton = false }: { order: IOrder & { customer?: ICustomer }, showAcceptButton?: boolean }) => {
     const getStatusBadge = (status: string) => {
       const statusConfig = {
         prepared: { label: 'Available', className: 'bg-blue-100 text-blue-800' },

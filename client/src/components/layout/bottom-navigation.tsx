@@ -1,12 +1,12 @@
 import { Home, Package, BarChart3, User, Power } from 'lucide-react';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { getAuthHeaders } from '@/lib/auth';
 
 export default function BottomNavigation() {
-  const [location] = useLocation();
+  const location = useLocation();
   const { partner, updatePartner } = useAuth();
 
   const toggleStatusMutation = useMutation({
@@ -33,15 +33,15 @@ export default function BottomNavigation() {
       <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200">
         <div className="flex items-center justify-around py-2">
           {navItems.map(({ path, icon: Icon, label }) => (
-            <Link key={path} href={path}>
-              <button 
-                className={`flex flex-col items-center py-2 px-4 ${
-                  location === path ? 'text-primary' : 'text-gray-500'
-                }`}
-              >
-                <Icon className="w-5 h-5 mb-1" />
-                <span className="text-xs font-medium">{label}</span>
-              </button>
+            <Link 
+              key={path} 
+              to={path}
+              className={`flex flex-col items-center py-2 px-4 ${
+                location.pathname === path ? 'text-primary' : 'text-gray-500'
+              }`}
+            >
+              <Icon className="w-5 h-5 mb-1" />
+              <span className="text-xs font-medium">{label}</span>
             </Link>
           ))}
         </div>

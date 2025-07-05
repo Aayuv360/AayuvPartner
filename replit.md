@@ -10,7 +10,7 @@ The application follows a modern full-stack architecture with clear separation b
 
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript
-- **Routing**: Wouter for lightweight client-side routing
+- **Routing**: React Router DOM for client-side routing
 - **State Management**: Zustand for authentication state and local state management
 - **Data Fetching**: TanStack Query (React Query) for server state management
 - **UI Components**: Radix UI primitives with shadcn/ui component library
@@ -107,6 +107,7 @@ The application follows a modern full-stack architecture with clear separation b
 ## Changelog
 - July 05, 2025. Initial setup with PostgreSQL/Drizzle
 - July 05, 2025. Successfully migrated from PostgreSQL/Drizzle to MongoDB/Mongoose per user requirements
+- July 05, 2025. Migrated routing from wouter to React Router DOM per user requirements
 
 ## User Preferences
 

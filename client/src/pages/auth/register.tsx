@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Truck, User, Lock, Mail, Phone } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -199,7 +199,7 @@ export default function Register() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Already have an account?{' '}
-                <Link href="/" className="text-primary font-medium hover:underline">
+                <Link to="/login" className="text-primary font-medium hover:underline">
                   Sign in
                 </Link>
               </p>

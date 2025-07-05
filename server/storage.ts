@@ -20,6 +20,7 @@ export interface IStorage {
   // Delivery Partner methods
   getDeliveryPartner(id: string): Promise<IDeliveryPartner | null>;
   getDeliveryPartnerByEmail(email: string): Promise<IDeliveryPartner | null>;
+  getDeliveryPartnerByPhone(phone: string): Promise<IDeliveryPartner | null>;
   createDeliveryPartner(partner: InsertDeliveryPartner): Promise<IDeliveryPartner>;
   updateDeliveryPartner(id: string, updates: Partial<IDeliveryPartner>): Promise<IDeliveryPartner | null>;
   
@@ -129,6 +130,10 @@ export class DatabaseStorage implements IStorage {
 
   async getDeliveryPartnerByEmail(email: string): Promise<IDeliveryPartner | null> {
     return await DeliveryPartner.findOne({ email });
+  }
+
+  async getDeliveryPartnerByPhone(phone: string): Promise<IDeliveryPartner | null> {
+    return await DeliveryPartner.findOne({ phone });
   }
 
   async createDeliveryPartner(insertPartner: InsertDeliveryPartner): Promise<IDeliveryPartner> {

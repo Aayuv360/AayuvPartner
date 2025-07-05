@@ -123,6 +123,7 @@ The application follows a modern full-stack architecture with clear separation b
 - July 05, 2025. Enhanced Google Maps features: Added partner location component with real-time GPS tracking and address display via reverse geocoding
 - July 05, 2025. Added delivery zones component showing nearby high-demand areas with surge pricing indicators, distance calculation, and navigation integration
 - July 05, 2025. Created route navigation component with Google Maps Directions API for real-time route planning, fuel cost calculation, and turn-by-turn navigation
+- July 05, 2025. **Major Update**: Implemented mobile-first OTP authentication system for Indian users with Hindi/English language support, replacing email-based auth with phone number + OTP verification for better user adoption in India
 
 ## User Preferences
 

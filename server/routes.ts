@@ -30,8 +30,13 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
   app.use(session({
     secret: process.env.SESSION_SECRET || 'aayuv-delivery-secret',
     resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    saveUninitialized: true,
+    cookie: { 
+      secure: false, 
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: false,
+      sameSite: 'lax'
+    }
   }));
 
   const httpServer = createServer(app);

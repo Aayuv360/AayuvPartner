@@ -1,13 +1,19 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, Lock, Globe, ArrowRight } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/lib/auth';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Phone, Lock, Globe, ArrowRight } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
 
 interface SendOtpResponse {
   message: string;
@@ -23,26 +29,28 @@ interface VerifyOtpResponse {
 }
 
 export default function MobileOtpLogin() {
-  const [step, setStep] = useState<'phone' | 'otp' | 'register'>('phone');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [name, setName] = useState('');
+  const [step, setStep] = useState<"phone" | "otp" | "register">("phone");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [name, setName] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
-  
+
   // Registration form fields
-  const [vehicleType, setVehicleType] = useState('');
-  const [vehicleNumber, setVehicleNumber] = useState('');
-  const [licenseNumber, setLicenseNumber] = useState('');
-  const [aadhaarNumber, setAadhaarNumber] = useState('');
-  const [panNumber, setPanNumber] = useState('');
-  const [upiId, setUpiId] = useState('');
-  
+  const [vehicleType, setVehicleType] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [aadhaarNumber, setAadhaarNumber] = useState("");
+  const [panNumber, setPanNumber] = useState("");
+  const [upiId, setUpiId] = useState("");
+
   const { toast } = useToast();
   const { login } = useAuth();
 
   const sendOtpMutation = useMutation({
     mutationFn: async (phone: string) => {
-      const response = await apiRequest('POST', '/api/auth/send-otp', { phone });
+      const response = await apiRequest("POST", "/api/auth/send-otp", {
+        phone,
+      });
       return response.json();
     },
     onSuccess: (data: SendOtpResponse) => {
@@ -51,51 +59,56 @@ export default function MobileOtpLogin() {
         console.log(`🔐 OTP for ${phone}: ${data.otp}`);
         console.log(`📱 Copy this OTP: ${data.otp}`);
       }
-      
+
       toast({
         title: "OTP Sent",
-        description: data.otp ? `OTP: ${data.otp} (Check console for easy copy)` : `OTP has been sent to ${phone}`,
+        description: data.otp
+          ? `OTP: ${data.otp} (Check console for easy copy)`
+          : `OTP has been sent to ${phone}`,
       });
-      
+
       // Auto-fill OTP in development
       if (data.otp) {
         setOtp(data.otp);
       }
-      
-      setStep('otp');
+
+      setStep("otp");
     },
     onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message || "Failed to send OTP",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const verifyOtpMutation = useMutation({
     mutationFn: async ({ phone, otp }: { phone: string; otp: string }) => {
-      const response = await apiRequest('POST', '/api/auth/verify-otp', { phone, otp });
+      const response = await apiRequest("POST", "/api/auth/verify-otp", {
+        phone,
+        otp,
+      });
       return response.json();
     },
     onSuccess: (data: VerifyOtpResponse) => {
-      console.log('OTP verification successful:', data);
-      
-      if (data.name.includes('Partner')) {
+      console.log("OTP verification successful:", data);
+
+      if (data.name.includes("Partner")) {
         // New user, needs registration
         toast({
           title: "Phone Verified",
-          description: "Please complete your registration"
+          description: "Please complete your registration",
         });
         setIsNewUser(true);
-        setStep('register');
+        setStep("register");
       } else {
         // Existing user, login successful
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${data.name}!`
+          description: `Welcome back, ${data.name}!`,
         });
-        console.log('Calling login with:', data);
+        console.log("Calling login with:", data);
         login(data);
       }
     },
@@ -103,20 +116,24 @@ export default function MobileOtpLogin() {
       toast({
         title: "Invalid OTP",
         description: "Please enter the correct OTP",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (formData: any) => {
-      const response = await apiRequest('POST', '/api/auth/mobile-register', formData);
+      const response = await apiRequest(
+        "POST",
+        "/api/auth/mobile-register",
+        formData,
+      );
       return response.json();
     },
     onSuccess: (data: VerifyOtpResponse) => {
       toast({
         title: "Registration Successful",
-        description: "Your account has been created"
+        description: "Your account has been created",
       });
       login(data);
     },
@@ -124,9 +141,9 @@ export default function MobileOtpLogin() {
       toast({
         title: "Error",
         description: "Registration failed",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const handleSendOtp = () => {
@@ -134,7 +151,7 @@ export default function MobileOtpLogin() {
       toast({
         title: "Invalid Number",
         description: "Please enter a valid mobile number",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -146,7 +163,7 @@ export default function MobileOtpLogin() {
       toast({
         title: "Invalid OTP",
         description: "OTP must be 6 digits",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -156,33 +173,33 @@ export default function MobileOtpLogin() {
   const handleRegister = () => {
     // Validation
     const errors = [];
-    if (!name.trim()) errors.push('Enter name');
-    if (!vehicleType) errors.push('Select vehicle type');
-    if (!vehicleNumber.trim()) errors.push('Enter vehicle number');
-    if (!licenseNumber.trim()) errors.push('Enter license number');
-    if (!aadhaarNumber.trim()) errors.push('Enter Aadhaar number');
-    if (!upiId.trim()) errors.push('Enter UPI ID');
+    if (!name.trim()) errors.push("Enter name");
+    if (!vehicleType) errors.push("Select vehicle type");
+    if (!vehicleNumber.trim()) errors.push("Enter vehicle number");
+    if (!licenseNumber.trim()) errors.push("Enter license number");
+    if (!aadhaarNumber.trim()) errors.push("Enter Aadhaar number");
+    if (!upiId.trim()) errors.push("Enter UPI ID");
 
     if (errors.length > 0) {
       toast({
         title: "Incomplete Information",
         description: errors[0],
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     // Submit registration
-    registerMutation.mutate({ 
-      phone, 
-      name, 
-      preferredLanguage: 'english',
+    registerMutation.mutate({
+      phone,
+      name,
+      preferredLanguage: "english",
       vehicleType,
       vehicleNumber,
       licenseNumber,
       aadhaarNumber,
       panNumber,
-      upiId
+      upiId,
     });
   };
 
@@ -202,9 +219,8 @@ export default function MobileOtpLogin() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-
           {/* Phone Number Step */}
-          {step === 'phone' && (
+          {step === "phone" && (
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-gray-700">
@@ -225,13 +241,15 @@ export default function MobileOtpLogin() {
                   />
                 </div>
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={handleSendOtp}
                 disabled={sendOtpMutation.isPending}
                 className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-medium"
               >
-                {sendOtpMutation.isPending ? 'Sending...' : (
+                {sendOtpMutation.isPending ? (
+                  "Sending..."
+                ) : (
                   <>
                     Send OTP
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -242,14 +260,12 @@ export default function MobileOtpLogin() {
           )}
 
           {/* OTP Verification Step */}
-          {step === 'otp' && (
+          {step === "otp" && (
             <div className="space-y-4">
               <div className="text-center">
-                <p className="text-gray-600">
-                  Enter OTP sent to +91 {phone}
-                </p>
+                <p className="text-gray-600">Enter OTP sent to +91 {phone}</p>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="otp" className="text-gray-700">
                   6-Digit OTP
@@ -267,17 +283,17 @@ export default function MobileOtpLogin() {
                   />
                 </div>
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={handleVerifyOtp}
                 disabled={verifyOtpMutation.isPending}
                 className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-medium"
               >
-                {verifyOtpMutation.isPending ? 'Verifying...' : 'Verify OTP'}
+                {verifyOtpMutation.isPending ? "Verifying..." : "Verify OTP"}
               </Button>
-              
+
               <button
-                onClick={() => setStep('phone')}
+                onClick={() => setStep("phone")}
                 className="w-full text-orange-500 text-sm"
               >
                 Change Number
@@ -286,20 +302,20 @@ export default function MobileOtpLogin() {
           )}
 
           {/* Registration Step */}
-          {step === 'register' && (
+          {step === "register" && (
             <div className="space-y-4">
               <div className="text-center">
                 <p className="text-gray-600">
                   Complete delivery partner registration
                 </p>
               </div>
-              
+
               {/* Personal Information */}
               <div className="space-y-3">
                 <h3 className="font-medium text-gray-800">
                   📋 Personal Information
                 </h3>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-gray-700">
                     Full Name *
@@ -350,7 +366,7 @@ export default function MobileOtpLogin() {
                 <h3 className="font-medium text-gray-800">
                   🏍️ Vehicle Information
                 </h3>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="vehicleType" className="text-gray-700">
                     Vehicle Type *
@@ -361,21 +377,11 @@ export default function MobileOtpLogin() {
                     onChange={(e) => setVehicleType(e.target.value)}
                     className="w-full h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
-                    <option value="">
-                      Select Vehicle
-                    </option>
-                    <option value="bike">
-                      Motorcycle/Scooter
-                    </option>
-                    <option value="bicycle">
-                      Bicycle
-                    </option>
-                    <option value="car">
-                      Car
-                    </option>
-                    <option value="auto">
-                      Auto Rickshaw
-                    </option>
+                    <option value="">Select Vehicle</option>
+                    <option value="bike">Motorcycle/Scooter</option>
+                    <option value="bicycle">Bicycle</option>
+                    <option value="car">Car</option>
+                    <option value="auto">Auto Rickshaw</option>
                   </select>
                 </div>
 
@@ -388,7 +394,9 @@ export default function MobileOtpLogin() {
                     type="text"
                     placeholder="DL 01 AB 1234"
                     value={vehicleNumber}
-                    onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
+                    onChange={(e) =>
+                      setVehicleNumber(e.target.value.toUpperCase())
+                    }
                     className="h-10"
                   />
                 </div>
@@ -402,7 +410,9 @@ export default function MobileOtpLogin() {
                     type="text"
                     placeholder="DL-1420110012345"
                     value={licenseNumber}
-                    onChange={(e) => setLicenseNumber(e.target.value.toUpperCase())}
+                    onChange={(e) =>
+                      setLicenseNumber(e.target.value.toUpperCase())
+                    }
                     className="h-10"
                   />
                 </div>
@@ -413,7 +423,7 @@ export default function MobileOtpLogin() {
                 <h3 className="font-medium text-gray-800">
                   💳 Payment Information
                 </h3>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="upi" className="text-gray-700">
                     UPI ID *
@@ -431,15 +441,17 @@ export default function MobileOtpLogin() {
                   </p>
                 </div>
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={handleRegister}
                 disabled={registerMutation.isPending}
                 className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-medium"
               >
-                {registerMutation.isPending ? 'Registering...' : 'Become Delivery Partner'}
+                {registerMutation.isPending
+                  ? "Registering..."
+                  : "Become Delivery Partner"}
               </Button>
-              
+
               <p className="text-xs text-gray-500 text-center">
                 * All required fields must be filled
               </p>

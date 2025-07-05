@@ -15,9 +15,14 @@ export function useWebSocket() {
   useEffect(() => {
     if (!isAuthenticated || !partner) return;
 
+    // Temporarily disable WebSocket to debug authentication
+    console.log('WebSocket connection disabled for debugging');
+    return;
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     
+    console.log('Attempting WebSocket connection to:', wsUrl);
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {

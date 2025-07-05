@@ -12,9 +12,12 @@ import Profile from "@/pages/profile";
 import MobileOtpLogin from "@/components/auth/mobile-otp-login";
 
 function AppRouter() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, partner } = useAuth();
+  
+  console.log('AppRouter: isAuthenticated =', isAuthenticated, 'partner =', partner);
 
   if (!isAuthenticated) {
+    console.log('User not authenticated, showing auth page');
     return (
       <Routes>
         <Route path="/auth" element={<MobileOtpLogin />} />
@@ -23,6 +26,8 @@ function AppRouter() {
       </Routes>
     );
   }
+
+  console.log('User authenticated, showing main app');
 
   return (
     <Routes>

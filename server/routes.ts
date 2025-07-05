@@ -174,6 +174,12 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
       (req.session as any).otpPhone = phone;
       (req.session as any).otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
       
+      // Display OTP clearly in server console for development
+      console.log('\n' + '🔐='.repeat(25));
+      console.log(`📱 OTP for ${phone}: ${otp}`);
+      console.log(`📋 Copy this OTP: ${otp}`);
+      console.log('🔐='.repeat(25) + '\n');
+      
       res.json({ 
         message: smsStatus === "sent" ? "OTP sent to your mobile number" : "OTP sent successfully",
         otp: process.env.NODE_ENV === 'development' ? otp : undefined, // Only show in development

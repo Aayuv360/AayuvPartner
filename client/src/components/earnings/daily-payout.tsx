@@ -18,13 +18,15 @@ export default function DailyPayout() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: todayEarnings, isLoading: isLoadingEarnings } = useQuery<number>({
+  const { data: todayEarningsData, isLoading: isLoadingEarnings } = useQuery<{amount: number}>({
     queryKey: ['/api/earnings/today'],
   });
+  const todayEarnings = todayEarningsData?.amount || 0;
 
-  const { data: availableBalance } = useQuery<number>({
+  const { data: availableBalanceData } = useQuery<{amount: number}>({
     queryKey: ['/api/earnings/available'],
   });
+  const availableBalance = availableBalanceData?.amount || 0;
 
   const { data: payoutHistory } = useQuery<PayoutHistory[]>({
     queryKey: ['/api/payouts/history'],
@@ -57,7 +59,7 @@ export default function DailyPayout() {
   });
 
   const handleInstantPayout = () => {
-    if (availableBalance && availableBalance >= 100) {
+    if (availableBalance >= 100) {
       instantPayoutMutation.mutate(availableBalance);
     } else {
       toast({
@@ -92,7 +94,7 @@ export default function DailyPayout() {
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm text-gray-600">Today's Total</span>
           <span className="text-2xl font-bold text-green-600">
-            ₹{todayEarnings?.toFixed(2) || '0.00'}
+            ₹{todayEarnings.toFixed(2)}
           </span>
         </div>
         <div className="text-xs text-gray-500">
@@ -106,14 +108,14 @@ export default function DailyPayout() {
           <div>
             <p className="text-sm font-medium text-gray-900">Available for Instant Payout</p>
             <p className="text-xl font-bold text-gray-900">
-              ₹{availableBalance?.toFixed(2) || '0.00'}
+              ₹{availableBalance.toFixed(2)}
             </p>
           </div>
           <button
             onClick={handleInstantPayout}
-            disabled={!availableBalance || availableBalance < 100 || isProcessing}
+            disabled={availableBalance < 100 || isProcessing}
             className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${
-              availableBalance && availableBalance >= 100 && !isProcessing
+              availableBalance >= 100 && !isProcessing
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
@@ -131,7 +133,7 @@ export default function DailyPayout() {
             )}
           </button>
         </div>
-        {availableBalance && availableBalance < 100 && (
+        {availableBalance < 100 && (
           <p className="text-xs text-gray-500 mt-1">
             Minimum ₹100 required for instant payout
           </p>

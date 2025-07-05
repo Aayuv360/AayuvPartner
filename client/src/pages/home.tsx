@@ -8,6 +8,7 @@ import RecentDeliveries from '@/components/dashboard/recent-deliveries';
 import SurgeIndicator from '@/components/surge/surge-indicator';
 import DailyPayout from '@/components/earnings/daily-payout';
 import ShiftManager from '@/components/shifts/shift-manager';
+import PartnerLocation from '@/components/maps/partner-location';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { IOrder, ICustomer } from '@shared/schema';
@@ -26,6 +27,11 @@ export default function Home() {
       <Header />
       
       <main className="pb-20">
+        {/* Partner Location */}
+        <section className="px-4 mb-4">
+          <PartnerLocation />
+        </section>
+
         {/* Stats Dashboard */}
         <section className="p-4">
           <StatsGrid />

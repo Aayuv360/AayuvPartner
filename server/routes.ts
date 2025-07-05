@@ -236,6 +236,10 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
         }
       }
       
+      // Mark OTP as used immediately to prevent reuse
+      const sessionData2 = req.session as any;
+      sessionData2.otpUsed = true;
+      
       // Check if user exists
       let partner = await storage.getDeliveryPartnerByPhone(phone);
       
@@ -251,8 +255,7 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
         });
       }
       
-      // Clear OTP session
-      const sessionData2 = req.session as any;
+      // Clear OTP session after successful verification
       delete sessionData2.otp;
       delete sessionData2.otpPhone;
       delete sessionData2.otpExpiry;

@@ -97,7 +97,7 @@ export default function Orders() {
         
         {showAcceptButton && (
           <Button
-            onClick={() => acceptOrderMutation.mutate(order.id)}
+            onClick={() => acceptOrderMutation.mutate(order._id)}
             disabled={acceptOrderMutation.isPending}
             className="w-full bg-primary text-white"
           >

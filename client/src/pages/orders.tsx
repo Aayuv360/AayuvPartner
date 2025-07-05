@@ -24,7 +24,7 @@ export default function Orders() {
   });
 
   const acceptOrderMutation = useMutation({
-    mutationFn: async (orderId: number) => {
+    mutationFn: async (orderId: string) => {
       const response = await apiRequest('PATCH', `/api/orders/${orderId}/accept`);
       return response.json();
     },

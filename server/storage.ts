@@ -198,10 +198,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAvailableOrders(): Promise<IOrder[]> {
-    return await Order.find({ 
+    const orders = await Order.find({ 
       status: 'prepared', 
       deliveryPartnerId: null 
     }).populate('customerId');
+    
+    // Ensure _id is properly serialized
+    return orders.map(order => ({
+      ...order.toObject(),
+      _id: order._id.toString()
+    }));
   }
 
   // Earnings methods

@@ -44,9 +44,15 @@ export default function MobileOtpLogin() {
     mutationFn: (phone: string) => 
       apiRequest('POST', '/api/auth/send-otp', { phone }),
     onSuccess: (data: SendOtpResponse) => {
+      // Log OTP to console in development
+      if (data.otp) {
+        console.log(`🔐 OTP for ${phone}: ${data.otp}`);
+        console.log(`📱 Copy this OTP: ${data.otp}`);
+      }
+      
       toast({
         title: "OTP Sent",
-        description: data.otp ? `OTP: ${data.otp} (Development Mode)` : `OTP has been sent to ${phone}`,
+        description: data.otp ? `OTP: ${data.otp} (Check console for easy copy)` : `OTP has been sent to ${phone}`,
       });
       
       // Auto-fill OTP in development

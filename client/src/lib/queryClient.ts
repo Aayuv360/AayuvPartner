@@ -14,8 +14,8 @@ function getAuthHeaders(): Record<string, string> {
     try {
       const parsed = JSON.parse(authStorage);
       const partner = parsed.state?.partner;
-      if (partner && partner.id) {
-        return { 'x-partner-id': partner.id.toString() };
+      if (partner && partner._id) {
+        return { 'x-partner-id': partner._id.toString() };
       }
     } catch (error) {
       console.error('Failed to parse auth storage:', error);

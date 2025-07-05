@@ -59,6 +59,14 @@ The application follows a modern full-stack architecture with clear separation b
 - Location history storage
 - Real-time location updates to server via WebSocket
 
+### Competitive Features (Zomato/Swiggy Parity)
+- **Surge Pricing**: Dynamic pricing with real-time demand indicators and multipliers
+- **Order Batching**: Group multiple orders for optimized routes and 40% bonus earnings
+- **Shift Management**: Flexible working hours with preferred time slots and auto-accept settings
+- **Daily Payouts**: Instant earnings withdrawal with minimum threshold controls
+- **Dark Mode**: Complete theme switching with persistent user preference
+- **Heat Maps**: Visual demand density with surge zones and hotspot indicators
+
 ## Data Flow
 
 1. **Authentication Flow**: Partner logs in → JWT/session stored → Headers attached to requests
@@ -111,6 +119,7 @@ The application follows a modern full-stack architecture with clear separation b
 - July 05, 2025. Successfully migrated from PostgreSQL/Drizzle to MongoDB/Mongoose per user requirements
 - July 05, 2025. Migrated routing from wouter to React Router DOM per user requirements  
 - July 05, 2025. Integrated Google Maps with GPS tracking using API key: AIzaSyAnwH0jPc54BR-sdRBybXkwIo5QjjGceSI
+- July 05, 2025. Added competitive features matching Zomato/Swiggy: surge pricing, order batching, shift management, daily payouts, and dark mode theme
 
 ## User Preferences
 

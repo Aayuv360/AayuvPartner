@@ -3,6 +3,7 @@ import { Package, MapPin, Clock } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Header from '@/components/layout/header';
 import BottomNavigation from '@/components/layout/bottom-navigation';
+import BatchOrders from '@/components/batching/batch-orders';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -116,11 +117,16 @@ export default function Orders() {
         <div className="p-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Orders</h1>
           
-          <Tabs defaultValue="available" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs defaultValue="batches" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="batches">Batches</TabsTrigger>
               <TabsTrigger value="available">Available</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="batches" className="space-y-4 mt-4">
+              <BatchOrders />
+            </TabsContent>
             
             <TabsContent value="available" className="space-y-4 mt-4">
               {isLoadingAvailable ? (

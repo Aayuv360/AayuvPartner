@@ -5,6 +5,9 @@ import BottomNavigation from '@/components/layout/bottom-navigation';
 import StatsGrid from '@/components/dashboard/stats-grid';
 import DeliveryTracking from '@/components/delivery/delivery-tracking';
 import RecentDeliveries from '@/components/dashboard/recent-deliveries';
+import SurgeIndicator from '@/components/surge/surge-indicator';
+import DailyPayout from '@/components/earnings/daily-payout';
+import ShiftManager from '@/components/shifts/shift-manager';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { IOrder, ICustomer } from '@shared/schema';
@@ -26,6 +29,17 @@ export default function Home() {
         {/* Stats Dashboard */}
         <section className="p-4">
           <StatsGrid />
+        </section>
+
+        {/* Surge Zones & Daily Payout */}
+        <section className="px-4 mb-6 space-y-4">
+          <SurgeIndicator />
+          <DailyPayout />
+        </section>
+
+        {/* Shift Management */}
+        <section className="px-4 mb-6">
+          <ShiftManager />
         </section>
 
         {/* Active Order Section */}

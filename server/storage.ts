@@ -1,307 +1,227 @@
 import { 
-  deliveryPartners, 
-  customers, 
-  orders, 
-  earnings, 
-  partnerLocations,
-  type DeliveryPartner, 
+  DeliveryPartner,
+  Customer, 
+  Order, 
+  Earning, 
+  PartnerLocation,
+  type IDeliveryPartner, 
   type InsertDeliveryPartner,
-  type Customer,
+  type ICustomer,
   type InsertCustomer,
-  type Order, 
+  type IOrder, 
   type InsertOrder,
-  type Earning,
+  type IEarning,
   type InsertEarning,
-  type PartnerLocation,
+  type IPartnerLocation,
   type InsertPartnerLocation
 } from "@shared/schema";
 
 export interface IStorage {
   // Delivery Partner methods
-  getDeliveryPartner(id: number): Promise<DeliveryPartner | undefined>;
-  getDeliveryPartnerByEmail(email: string): Promise<DeliveryPartner | undefined>;
-  createDeliveryPartner(partner: InsertDeliveryPartner): Promise<DeliveryPartner>;
-  updateDeliveryPartner(id: number, updates: Partial<DeliveryPartner>): Promise<DeliveryPartner | undefined>;
+  getDeliveryPartner(id: string): Promise<IDeliveryPartner | null>;
+  getDeliveryPartnerByEmail(email: string): Promise<IDeliveryPartner | null>;
+  createDeliveryPartner(partner: InsertDeliveryPartner): Promise<IDeliveryPartner>;
+  updateDeliveryPartner(id: string, updates: Partial<IDeliveryPartner>): Promise<IDeliveryPartner | null>;
   
   // Customer methods
-  getCustomer(id: number): Promise<Customer | undefined>;
-  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getCustomer(id: string): Promise<ICustomer | null>;
+  createCustomer(customer: InsertCustomer): Promise<ICustomer>;
   
   // Order methods
-  getOrder(id: number): Promise<Order | undefined>;
-  getOrdersByPartnerId(partnerId: number): Promise<Order[]>;
-  getActiveOrderByPartnerId(partnerId: number): Promise<Order | undefined>;
-  createOrder(order: InsertOrder): Promise<Order>;
-  updateOrderStatus(id: number, status: string, partnerId?: number): Promise<Order | undefined>;
-  getAvailableOrders(): Promise<Order[]>;
+  getOrder(id: string): Promise<IOrder | null>;
+  getOrdersByPartnerId(partnerId: string): Promise<IOrder[]>;
+  getActiveOrderByPartnerId(partnerId: string): Promise<IOrder | null>;
+  createOrder(order: InsertOrder): Promise<IOrder>;
+  updateOrderStatus(id: string, status: string, partnerId?: string): Promise<IOrder | null>;
+  getAvailableOrders(): Promise<IOrder[]>;
   
   // Earnings methods
-  getEarningsByPartnerId(partnerId: number): Promise<Earning[]>;
-  getTodayEarnings(partnerId: number): Promise<number>;
-  createEarning(earning: InsertEarning): Promise<Earning>;
+  getEarningsByPartnerId(partnerId: string): Promise<IEarning[]>;
+  getTodayEarnings(partnerId: string): Promise<number>;
+  createEarning(earning: InsertEarning): Promise<IEarning>;
   
   // Location methods
-  createPartnerLocation(location: InsertPartnerLocation): Promise<PartnerLocation>;
-  getPartnerLocations(partnerId: number, limit?: number): Promise<PartnerLocation[]>;
+  createPartnerLocation(location: InsertPartnerLocation): Promise<IPartnerLocation>;
+  getPartnerLocations(partnerId: string, limit?: number): Promise<IPartnerLocation[]>;
 }
 
-export class MemStorage implements IStorage {
-  private deliveryPartners: Map<number, DeliveryPartner>;
-  private customers: Map<number, Customer>;
-  private orders: Map<number, Order>;
-  private earnings: Map<number, Earning>;
-  private partnerLocations: Map<number, PartnerLocation>;
-  private currentId: number;
-  private orderCounter: number;
+export class DatabaseStorage implements IStorage {
+  
+  async initializeSampleData() {
+    try {
+      // Check if sample data already exists
+      const existingCustomers = await Customer.countDocuments();
+      if (existingCustomers > 0) {
+        console.log('Sample data already exists, skipping initialization');
+        return;
+      }
 
-  constructor() {
-    this.deliveryPartners = new Map();
-    this.customers = new Map();
-    this.orders = new Map();
-    this.earnings = new Map();
-    this.partnerLocations = new Map();
-    this.currentId = 1;
-    this.orderCounter = 1;
-    
-    // Initialize with sample data
-    this.initializeSampleData();
-  }
+      // Sample customers
+      const customer1 = new Customer({
+        name: "Priya Sharma",
+        phone: "+91 9876543210",
+        address: "Block A, Sector 18, Noida",
+        latitude: "28.5672",
+        longitude: "77.3248"
+      });
 
-  private initializeSampleData() {
-    // Sample customers
-    const customer1: Customer = {
-      id: 1,
-      name: "Priya Sharma",
-      phone: "+91 9876543210",
-      address: "Block A, Sector 18, Noida",
-      latitude: "28.5672",
-      longitude: "77.3248"
-    };
-    
-    const customer2: Customer = {
-      id: 2,
-      name: "Amit Verma", 
-      phone: "+91 9876543211",
-      address: "DLF Phase 3, Gurgaon",
-      latitude: "28.4595",
-      longitude: "77.0266"
-    };
+      const customer2 = new Customer({
+        name: "Amit Verma", 
+        phone: "+91 9876543211",
+        address: "DLF Phase 3, Gurgaon",
+        latitude: "28.4595",
+        longitude: "77.0266"
+      });
 
-    this.customers.set(1, customer1);
-    this.customers.set(2, customer2);
+      await customer1.save();
+      await customer2.save();
 
-    // Sample orders
-    const order1: Order = {
-      id: 1,
-      orderNumber: "ORD-2024-001",
-      customerId: 1,
-      deliveryPartnerId: null,
-      status: "prepared",
-      amount: "450.00",
-      deliveryFee: "40.00",
-      paymentMethod: "cash",
-      deliveryAddress: "Block A, Sector 18, Noida",
-      deliveryLatitude: "28.5672",
-      deliveryLongitude: "77.3248",
-      estimatedDeliveryTime: 25,
-      actualDeliveryTime: null,
-      partnerRating: null,
-      customerFeedback: null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+      // Sample orders
+      const order1 = new Order({
+        orderNumber: "ORD-2024-001",
+        customerId: customer1._id,
+        status: "prepared",
+        amount: "450.00",
+        deliveryFee: "40.00",
+        paymentMethod: "cash",
+        deliveryAddress: "Block A, Sector 18, Noida",
+        deliveryLatitude: "28.5672",
+        deliveryLongitude: "77.3248",
+        estimatedDeliveryTime: 25,
+      });
 
-    const order2: Order = {
-      id: 2,
-      orderNumber: "ORD-2024-002",
-      customerId: 2,
-      deliveryPartnerId: null,
-      status: "prepared",
-      amount: "320.00",
-      deliveryFee: "35.00",
-      paymentMethod: "online",
-      deliveryAddress: "DLF Phase 3, Gurgaon",
-      deliveryLatitude: "28.4595",
-      deliveryLongitude: "77.0266",
-      estimatedDeliveryTime: 30,
-      actualDeliveryTime: null,
-      partnerRating: null,
-      customerFeedback: null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+      const order2 = new Order({
+        orderNumber: "ORD-2024-002",
+        customerId: customer2._id,
+        status: "prepared",
+        amount: "320.00",
+        deliveryFee: "35.00",
+        paymentMethod: "online",
+        deliveryAddress: "DLF Phase 3, Gurgaon",
+        deliveryLatitude: "28.4595",
+        deliveryLongitude: "77.0266",
+        estimatedDeliveryTime: 30,
+      });
 
-    this.orders.set(1, order1);
-    this.orders.set(2, order2);
-    this.currentId = Math.max(this.currentId, 3);
-    this.orderCounter = 3;
-  }
-
-  private generateOrderNumber(): string {
-    return `ORD-2024-${String(this.orderCounter++).padStart(3, '0')}`;
+      await order1.save();
+      await order2.save();
+      
+      console.log('Sample data initialized successfully');
+    } catch (error) {
+      console.error('Error initializing sample data:', error);
+    }
   }
 
   // Delivery Partner methods
-  async getDeliveryPartner(id: number): Promise<DeliveryPartner | undefined> {
-    return this.deliveryPartners.get(id);
+  async getDeliveryPartner(id: string): Promise<IDeliveryPartner | null> {
+    return await DeliveryPartner.findById(id);
   }
 
-  async getDeliveryPartnerByEmail(email: string): Promise<DeliveryPartner | undefined> {
-    return Array.from(this.deliveryPartners.values()).find(
-      (partner) => partner.email === email
-    );
+  async getDeliveryPartnerByEmail(email: string): Promise<IDeliveryPartner | null> {
+    return await DeliveryPartner.findOne({ email });
   }
 
-  async createDeliveryPartner(insertPartner: InsertDeliveryPartner): Promise<DeliveryPartner> {
-    const id = this.currentId++;
-    const partner: DeliveryPartner = {
-      ...insertPartner,
-      id,
-      isOnline: false,
-      currentLatitude: null,
-      currentLongitude: null,
-      rating: "0",
-      totalDeliveries: 0,
-      totalEarnings: "0",
-      createdAt: new Date(),
-    };
-    this.deliveryPartners.set(id, partner);
-    return partner;
+  async createDeliveryPartner(insertPartner: InsertDeliveryPartner): Promise<IDeliveryPartner> {
+    const partner = new DeliveryPartner(insertPartner);
+    return await partner.save();
   }
 
-  async updateDeliveryPartner(id: number, updates: Partial<DeliveryPartner>): Promise<DeliveryPartner | undefined> {
-    const partner = this.deliveryPartners.get(id);
-    if (partner) {
-      const updated = { ...partner, ...updates };
-      this.deliveryPartners.set(id, updated);
-      return updated;
-    }
-    return undefined;
+  async updateDeliveryPartner(id: string, updates: Partial<IDeliveryPartner>): Promise<IDeliveryPartner | null> {
+    return await DeliveryPartner.findByIdAndUpdate(id, updates, { new: true });
   }
 
   // Customer methods
-  async getCustomer(id: number): Promise<Customer | undefined> {
-    return this.customers.get(id);
+  async getCustomer(id: string): Promise<ICustomer | null> {
+    return await Customer.findById(id);
   }
 
-  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
-    const id = this.currentId++;
-    const customer: Customer = {
-      ...insertCustomer,
-      id,
-    };
-    this.customers.set(id, customer);
-    return customer;
+  async createCustomer(insertCustomer: InsertCustomer): Promise<ICustomer> {
+    const customer = new Customer(insertCustomer);
+    return await customer.save();
   }
 
   // Order methods
-  async getOrder(id: number): Promise<Order | undefined> {
-    return this.orders.get(id);
+  async getOrder(id: string): Promise<IOrder | null> {
+    return await Order.findById(id).populate('customerId');
   }
 
-  async getOrdersByPartnerId(partnerId: number): Promise<Order[]> {
-    return Array.from(this.orders.values()).filter(
-      (order) => order.deliveryPartnerId === partnerId
-    );
+  async getOrdersByPartnerId(partnerId: string): Promise<IOrder[]> {
+    return await Order.find({ deliveryPartnerId: partnerId }).populate('customerId');
   }
 
-  async getActiveOrderByPartnerId(partnerId: number): Promise<Order | undefined> {
-    return Array.from(this.orders.values()).find(
-      (order) => order.deliveryPartnerId === partnerId && 
-      !['delivered', 'cancelled'].includes(order.status)
-    );
+  async getActiveOrderByPartnerId(partnerId: string): Promise<IOrder | null> {
+    return await Order.findOne({ 
+      deliveryPartnerId: partnerId, 
+      status: { $nin: ['delivered', 'cancelled'] }
+    }).populate('customerId');
   }
 
-  async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const id = this.currentId++;
-    const order: Order = {
+  async createOrder(insertOrder: InsertOrder): Promise<IOrder> {
+    const orderNumber = `ORD-2024-${String(Date.now()).slice(-6)}`;
+    const order = new Order({
       ...insertOrder,
-      id,
-      orderNumber: this.generateOrderNumber(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      orderNumber
+    });
+    return await order.save();
+  }
+
+  async updateOrderStatus(id: string, status: string, partnerId?: string): Promise<IOrder | null> {
+    const updates: any = { 
+      status,
+      updatedAt: new Date()
     };
-    this.orders.set(id, order);
-    return order;
-  }
-
-  async updateOrderStatus(id: number, status: string, partnerId?: number): Promise<Order | undefined> {
-    const order = this.orders.get(id);
-    if (order) {
-      const updates: Partial<Order> = {
-        status,
-        updatedAt: new Date(),
-      };
-      
-      if (partnerId !== undefined) {
-        updates.deliveryPartnerId = partnerId;
-      }
-      
-      if (status === 'delivered') {
-        updates.actualDeliveryTime = new Date();
-      }
-      
-      const updated = { ...order, ...updates };
-      this.orders.set(id, updated);
-      return updated;
+    
+    if (partnerId) {
+      updates.deliveryPartnerId = partnerId;
     }
-    return undefined;
+    
+    if (status === 'delivered') {
+      updates.actualDeliveryTime = new Date();
+    }
+    
+    return await Order.findByIdAndUpdate(id, updates, { new: true }).populate('customerId');
   }
 
-  async getAvailableOrders(): Promise<Order[]> {
-    return Array.from(this.orders.values()).filter(
-      (order) => order.status === 'prepared' && !order.deliveryPartnerId
-    );
+  async getAvailableOrders(): Promise<IOrder[]> {
+    return await Order.find({ 
+      status: 'prepared', 
+      deliveryPartnerId: null 
+    }).populate('customerId');
   }
 
   // Earnings methods
-  async getEarningsByPartnerId(partnerId: number): Promise<Earning[]> {
-    return Array.from(this.earnings.values()).filter(
-      (earning) => earning.deliveryPartnerId === partnerId
-    );
+  async getEarningsByPartnerId(partnerId: string): Promise<IEarning[]> {
+    return await Earning.find({ deliveryPartnerId: partnerId }).sort({ createdAt: -1 });
   }
 
-  async getTodayEarnings(partnerId: number): Promise<number> {
+  async getTodayEarnings(partnerId: string): Promise<number> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const todayEarnings = Array.from(this.earnings.values()).filter(
-      (earning) => earning.deliveryPartnerId === partnerId &&
-      earning.date && earning.date >= today
-    );
+    const earnings = await Earning.find({
+      deliveryPartnerId: partnerId,
+      createdAt: { $gte: today }
+    });
     
-    return todayEarnings.reduce((total, earning) => total + parseFloat(earning.amount), 0);
+    return earnings.reduce((total, earning) => total + parseFloat(earning.amount), 0);
   }
 
-  async createEarning(insertEarning: InsertEarning): Promise<Earning> {
-    const id = this.currentId++;
-    const earning: Earning = {
-      ...insertEarning,
-      id,
-      date: new Date(),
-    };
-    this.earnings.set(id, earning);
-    return earning;
+  async createEarning(insertEarning: InsertEarning): Promise<IEarning> {
+    const earning = new Earning(insertEarning);
+    return await earning.save();
   }
 
   // Location methods
-  async createPartnerLocation(insertLocation: InsertPartnerLocation): Promise<PartnerLocation> {
-    const id = this.currentId++;
-    const location: PartnerLocation = {
-      ...insertLocation,
-      id,
-      timestamp: new Date(),
-    };
-    this.partnerLocations.set(id, location);
-    return location;
+  async createPartnerLocation(insertLocation: InsertPartnerLocation): Promise<IPartnerLocation> {
+    const location = new PartnerLocation(insertLocation);
+    return await location.save();
   }
 
-  async getPartnerLocations(partnerId: number, limit: number = 10): Promise<PartnerLocation[]> {
-    return Array.from(this.partnerLocations.values())
-      .filter((location) => location.deliveryPartnerId === partnerId)
-      .sort((a, b) => (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0))
-      .slice(0, limit);
+  async getPartnerLocations(partnerId: string, limit: number = 10): Promise<IPartnerLocation[]> {
+    return await PartnerLocation.find({ deliveryPartnerId: partnerId })
+      .sort({ createdAt: -1 })
+      .limit(limit);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

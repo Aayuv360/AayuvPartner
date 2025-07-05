@@ -20,10 +20,10 @@ The application follows a modern full-stack architecture with clear separation b
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ESM modules
-- **Database**: PostgreSQL with Drizzle ORM
+- **Database**: MongoDB with Mongoose ODM
 - **Real-time Communication**: WebSocket for live order updates
-- **Session Management**: Express sessions with PostgreSQL store
-- **Authentication**: Header-based partner authentication
+- **Session Management**: Express sessions with in-memory store
+- **Authentication**: Header-based partner authentication with MongoDB ObjectIds
 
 ### Mobile-First Design
 - Responsive design optimized for mobile devices
@@ -82,9 +82,9 @@ The application follows a modern full-stack architecture with clear separation b
 - **zod**: Schema validation library
 
 ### Database
-- **PostgreSQL**: Primary database for data persistence
-- **Drizzle**: ORM for type-safe database operations
-- **Neon**: Serverless PostgreSQL hosting (configured)
+- **MongoDB**: Primary NoSQL database for data persistence
+- **Mongoose**: ODM for type-safe database operations and schema validation
+- **MongoDB Atlas**: Cloud-hosted MongoDB database with provided connection URI
 
 ## Deployment Strategy
 
@@ -100,12 +100,13 @@ The application follows a modern full-stack architecture with clear separation b
 - Environment-based configuration
 
 ### Database Management
-- Drizzle migrations for schema management
-- `db:push` script for development schema updates
-- Environment variable configuration for database URL
+- MongoDB schemas with Mongoose for data modeling
+- Automatic sample data initialization on first run
+- Environment variable configuration for MongoDB connection URI
 
 ## Changelog
-- July 05, 2025. Initial setup
+- July 05, 2025. Initial setup with PostgreSQL/Drizzle
+- July 05, 2025. Successfully migrated from PostgreSQL/Drizzle to MongoDB/Mongoose per user requirements
 
 ## User Preferences
 

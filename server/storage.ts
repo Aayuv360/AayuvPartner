@@ -89,7 +89,52 @@ export class MemStorage implements IStorage {
 
     this.customers.set(1, customer1);
     this.customers.set(2, customer2);
+
+    // Sample orders
+    const order1: Order = {
+      id: 1,
+      orderNumber: "ORD-2024-001",
+      customerId: 1,
+      deliveryPartnerId: null,
+      status: "prepared",
+      amount: "450.00",
+      deliveryFee: "40.00",
+      paymentMethod: "cash",
+      deliveryAddress: "Block A, Sector 18, Noida",
+      deliveryLatitude: "28.5672",
+      deliveryLongitude: "77.3248",
+      estimatedDeliveryTime: 25,
+      actualDeliveryTime: null,
+      partnerRating: null,
+      customerFeedback: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const order2: Order = {
+      id: 2,
+      orderNumber: "ORD-2024-002",
+      customerId: 2,
+      deliveryPartnerId: null,
+      status: "prepared",
+      amount: "320.00",
+      deliveryFee: "35.00",
+      paymentMethod: "online",
+      deliveryAddress: "DLF Phase 3, Gurgaon",
+      deliveryLatitude: "28.4595",
+      deliveryLongitude: "77.0266",
+      estimatedDeliveryTime: 30,
+      actualDeliveryTime: null,
+      partnerRating: null,
+      customerFeedback: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.orders.set(1, order1);
+    this.orders.set(2, order2);
     this.currentId = Math.max(this.currentId, 3);
+    this.orderCounter = 3;
   }
 
   private generateOrderNumber(): string {

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/lib/auth';
 import type { Earning } from '@shared/schema';
+import { formatDateIST, formatDateTimeIST } from '@shared/timezone';
 
 export default function Earnings() {
   const { partner } = useAuth();
@@ -22,13 +23,9 @@ export default function Earnings() {
     return `₹${parseFloat(amount.toString()).toFixed(0)}`;
   };
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | string | null) => {
     if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateIST(date);
   };
 
   const groupEarningsByDate = (earnings: Earning[]) => {

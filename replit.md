@@ -126,6 +126,7 @@ The application follows a modern full-stack architecture with clear separation b
 - July 05, 2025. **Major Update**: Implemented mobile-first OTP authentication system for Indian users, replacing email-based auth with phone number + OTP verification for better user adoption in India. Updated to English-only interface per user request (removed Hindi language support).
 - July 05, 2025. **Critical Features for India**: Added mandatory India-specific features including document verification system (Aadhaar, PAN, driving license, vehicle registration), Emergency SOS button for delivery partner safety, and Cash on Delivery (COD) management system. Updated profile page with tabbed interface for verification and safety features.
 - July 05, 2025. **Production Ready**: Fixed all critical bugs including order ID parameter types, earnings data format handling, and WebSocket interference. Application fully functional with complete authentication system, order management, real-time tracking, and all India-specific features. Ready for production deployment.
+- July 12, 2025. **Timezone Implementation**: Added comprehensive Asia/Kolkata (IST) timezone support using Luxon library. All date/time displays, earnings calculations, and order tracking now use Indian Standard Time. Created shared timezone utilities for consistent time handling across the application.
 
 ## User Preferences
 

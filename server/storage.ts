@@ -15,6 +15,7 @@ import {
   type IPartnerLocation,
   type InsertPartnerLocation
 } from "@shared/schema";
+import { getCurrentIST, getTodayStartIST, getTodayEndIST } from "@shared/timezone";
 
 export interface IStorage {
   // Delivery Partner methods
@@ -216,12 +217,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTodayEarnings(partnerId: string): Promise<number> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStart = getTodayStartIST().toJSDate();
+    const todayEnd = getTodayEndIST().toJSDate();
     
     const earnings = await Earning.find({
       deliveryPartnerId: partnerId,
-      createdAt: { $gte: today }
+      createdAt: { 
+        $gte: todayStart,
+        $lt: todayEnd
+      }
     });
     
     return earnings.reduce((total, earning) => total + parseFloat(earning.amount), 0);

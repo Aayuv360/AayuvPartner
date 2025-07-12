@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { IOrder, ICustomer } from '@shared/schema';
+import { formatDateTimeIST, getRelativeTimeIST } from '@shared/timezone';
 
 export default function Orders() {
   const { toast } = useToast();
@@ -87,6 +88,9 @@ export default function Orders() {
                 <span>{order.estimatedDeliveryTime} mins</span>
               </p>
             )}
+            <p className="text-xs text-gray-400 mt-1">
+              {order.createdAt ? getRelativeTimeIST(order.createdAt) : 'Just now'}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-lg font-semibold text-gray-900">₹{order.amount}</p>

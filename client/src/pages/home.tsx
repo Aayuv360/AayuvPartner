@@ -10,6 +10,7 @@ import DailyPayout from '@/components/earnings/daily-payout';
 import ShiftManager from '@/components/shifts/shift-manager';
 import PartnerLocation from '@/components/maps/partner-location';
 import DeliveryZones from '@/components/maps/delivery-zones';
+import RealTimeTracker from '@/components/tracking/real-time-tracker';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { IOrder, ICustomer } from '@shared/schema';
@@ -67,7 +68,7 @@ export default function Home() {
               </div>
             </div>
           ) : activeOrder ? (
-            <DeliveryTracking order={activeOrder} />
+            <RealTimeTracker order={activeOrder} />
           ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
               <p className="text-gray-500">No active orders</p>

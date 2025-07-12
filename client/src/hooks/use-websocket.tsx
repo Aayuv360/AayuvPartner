@@ -15,29 +15,42 @@ export function useWebSocket() {
   useEffect(() => {
     if (!isAuthenticated || !partner) return;
 
-    // Temporarily disable WebSocket to debug authentication
-    console.log('WebSocket connection disabled for debugging');
-    return;
-
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     
-    console.log('Attempting WebSocket connection to:', wsUrl);
+    console.log('Connecting to WebSocket for real-time tracking:', wsUrl);
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
       setIsConnected(true);
-      // Authenticate with the WebSocket server
+      console.log('WebSocket connected for partner:', partner._id);
+      
+      // Send partner connection message
       ws.current?.send(JSON.stringify({
-        type: 'auth',
-        partnerId: partner.id
+        type: 'partner_connect',
+        partnerId: partner._id
       }));
     };
 
     ws.current.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
+        console.log('Real-time message received:', message.type);
         setLastMessage(message);
+        
+        // Handle different message types
+        if (message.type === 'order_update') {
+          window.dispatchEvent(new CustomEvent('order_update', { detail: message }));
+        }
+        
+        if (message.type === 'partner_location_update') {
+          window.dispatchEvent(new CustomEvent('partner_location_update', { detail: message }));
+        }
+        
+        if (message.type === 'order_status_update') {
+          window.dispatchEvent(new CustomEvent('order_status_update', { detail: message }));
+        }
+        
       } catch (error) {
         console.error('Failed to parse WebSocket message:', error);
       }
@@ -45,6 +58,7 @@ export function useWebSocket() {
 
     ws.current.onclose = () => {
       setIsConnected(false);
+      console.log('WebSocket disconnected');
     };
 
     ws.current.onerror = (error) => {
@@ -53,7 +67,9 @@ export function useWebSocket() {
     };
 
     return () => {
-      ws.current?.close();
+      if (ws.current) {
+        ws.current.close();
+      }
     };
   }, [isAuthenticated, partner]);
 

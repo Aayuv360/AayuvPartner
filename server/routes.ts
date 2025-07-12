@@ -49,13 +49,44 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
   wss.on('connection', (ws, req) => {
     console.log('WebSocket client connected');
     
-    ws.on('message', (data) => {
+    ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
+        
         if (message.type === 'partner_connect' && message.partnerId) {
           clients.set(message.partnerId, ws);
           console.log(`Partner ${message.partnerId} connected via WebSocket`);
         }
+        
+        // Handle real-time location updates from delivery partners
+        if (message.type === 'partner_location_update' && message.latitude && message.longitude) {
+          const { partnerId, orderId, latitude, longitude, timestamp } = message;
+          console.log(`Real-time location update: Partner ${partnerId}, Order ${orderId}`);
+          
+          // Store location in database
+          if (partnerId) {
+            await storage.createPartnerLocation({
+              deliveryPartnerId: partnerId,
+              latitude,
+              longitude
+            });
+            
+            // Update partner's current location
+            await storage.updateDeliveryPartner(partnerId, {
+              currentLatitude: latitude,
+              currentLongitude: longitude
+            });
+          }
+          
+          // Broadcast location update to relevant clients (customer tracking, admin dashboard)
+          broadcastLocationUpdate(partnerId || 'unknown', latitude, longitude, orderId);
+        }
+        
+        // Handle order status updates
+        if (message.type === 'order_status_update' && message.orderId && message.status) {
+          broadcastOrderStatusUpdate(message.orderId, message.status, message.partnerId);
+        }
+        
       } catch (err) {
         console.error('WebSocket message parse error:', err);
       }
@@ -389,6 +420,29 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
     }
   });
 
+  // Real-time location tracking endpoint
+  app.get("/api/partner/:partnerId/location/live", async (req: Request, res: Response) => {
+    try {
+      const { partnerId } = req.params;
+      const locations = await storage.getPartnerLocations(partnerId, 1);
+      
+      if (locations.length > 0) {
+        const lastLocation = locations[0];
+        res.json({
+          latitude: lastLocation.latitude,
+          longitude: lastLocation.longitude,
+          timestamp: lastLocation.createdAt,
+          partnerId
+        });
+      } else {
+        res.status(404).json({ error: 'No location data found' });
+      }
+    } catch (error) {
+      console.error('Error fetching live location:', error);
+      res.status(500).json({ error: 'Failed to fetch location' });
+    }
+  });
+
   app.post("/api/partner/location", authenticatePartner, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const validatedData = insertPartnerLocationSchema.parse({
@@ -405,8 +459,16 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
       // Store location history
       const location = await storage.createPartnerLocation(validatedData);
       
-      // Broadcast location update to relevant clients
-      broadcastLocationUpdate(req.partnerId!, validatedData.latitude, validatedData.longitude);
+      // Get active order for real-time tracking
+      const activeOrder = await storage.getActiveOrderByPartnerId(req.partnerId!);
+      
+      // Broadcast location update to relevant clients with order ID
+      broadcastLocationUpdate(
+        req.partnerId!, 
+        validatedData.latitude, 
+        validatedData.longitude,
+        activeOrder?._id
+      );
       
       res.json(location);
     } catch (error) {
@@ -681,18 +743,36 @@ export async function registerRoutes(app: Express.Application): Promise<Server> 
   });
 
   // WebSocket broadcast functions
-  function broadcastLocationUpdate(partnerId: string, latitude: string, longitude: string) {
+  function broadcastLocationUpdate(partnerId: string, latitude: string, longitude: string, orderId?: string) {
     const message = JSON.stringify({
-      type: 'location_update',
+      type: 'partner_location_update',
       partnerId,
+      orderId,
       latitude,
       longitude,
-      timestamp: new Date().toISOString()
+      timestamp: getCurrentIST().toISO()
     });
     
-    // Broadcast to all connected clients except the sender
+    // Broadcast to all connected clients (for customer tracking, admin dashboard)
     for (const [id, client] of clients.entries()) {
-      if (id !== partnerId && client.readyState === WebSocket.OPEN) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    }
+  }
+
+  function broadcastOrderStatusUpdate(orderId: string, status: string, partnerId?: string) {
+    const message = JSON.stringify({
+      type: 'order_status_update',
+      orderId,
+      status,
+      partnerId,
+      timestamp: getCurrentIST().toISO()
+    });
+    
+    // Broadcast to all connected clients
+    for (const client of clients.values()) {
+      if (client.readyState === WebSocket.OPEN) {
         client.send(message);
       }
     }

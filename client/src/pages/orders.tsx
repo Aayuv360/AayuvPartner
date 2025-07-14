@@ -157,7 +157,7 @@ export default function Orders() {
               ) : availableOrders && availableOrders.length > 0 ? (
                 <div>
                   {availableOrders.map((order) => (
-                    <OrderCard key={order.id} order={order} showAcceptButton />
+                    <OrderCard key={`available-${order._id}`} order={order} showAcceptButton />
                   ))}
                 </div>
               ) : (
@@ -184,7 +184,7 @@ export default function Orders() {
               ) : orderHistory && orderHistory.length > 0 ? (
                 <div>
                   {orderHistory.map((order) => (
-                    <OrderCard key={order.id} order={order} />
+                    <OrderCard key={`history-${order._id}`} order={order} />
                   ))}
                 </div>
               ) : (

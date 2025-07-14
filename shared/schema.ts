@@ -38,10 +38,11 @@ const deliveryPartnerSchema = new Schema({
 const customerSchema = new Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true },
-  address: { type: String, required: true },
+  email: { type: String, default: null },
+  address: { type: String, default: null },
   latitude: { type: String, default: null },
   longitude: { type: String, default: null },
-});
+}, { collection: 'users' }); // Map to existing 'users' collection
 
 // Address Schema for delivery addresses
 const addressSchema = new Schema({
@@ -56,8 +57,9 @@ const addressSchema = new Schema({
   longitude: { type: String, required: true },
   isDefault: { type: Boolean, default: false },
   nickname: { type: String, default: null }, // Like "Home", "Office", etc.
-}, {
-  timestamps: true
+}, { 
+  timestamps: true,
+  collection: 'addresses'  // Explicitly use 'addresses' collection
 });
 
 const orderSchema = new Schema({
@@ -73,8 +75,9 @@ const orderSchema = new Schema({
   actualDeliveryTime: { type: Date, default: null },
   partnerRating: { type: Number, default: null },
   customerFeedback: { type: String, default: null },
-}, {
-  timestamps: true
+}, { 
+  timestamps: true,
+  collection: 'orders'  // Explicitly use 'orders' collection
 });
 
 const earningSchema = new Schema({
@@ -257,7 +260,8 @@ export interface ICustomer extends Document {
   _id: string;
   name: string;
   phone: string;
-  address: string;
+  email?: string;
+  address?: string;
   latitude?: string;
   longitude?: string;
 }

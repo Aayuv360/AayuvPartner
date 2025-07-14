@@ -43,17 +43,32 @@ const customerSchema = new Schema({
   longitude: { type: String, default: null },
 });
 
+// Address Schema for delivery addresses
+const addressSchema = new Schema({
+  customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
+  addressLine1: { type: String, required: true },
+  addressLine2: { type: String, default: null },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  postalCode: { type: String, required: true },
+  country: { type: String, default: 'India' },
+  latitude: { type: String, required: true },
+  longitude: { type: String, required: true },
+  isDefault: { type: Boolean, default: false },
+  nickname: { type: String, default: null }, // Like "Home", "Office", etc.
+}, {
+  timestamps: true
+});
+
 const orderSchema = new Schema({
   orderNumber: { type: String, required: true, unique: true },
   customerId: { type: Schema.Types.ObjectId, ref: 'Customer' },
   deliveryPartnerId: { type: Schema.Types.ObjectId, ref: 'DeliveryPartner', default: null },
+  deliveryAddressId: { type: Schema.Types.ObjectId, ref: 'Address', required: true },
   status: { type: String, required: true, default: "prepared" },
   amount: { type: String, required: true },
   deliveryFee: { type: String, required: true },
   paymentMethod: { type: String, required: true },
-  deliveryAddress: { type: String, required: true },
-  deliveryLatitude: { type: String, default: null },
-  deliveryLongitude: { type: String, default: null },
   estimatedDeliveryTime: { type: Number, default: null },
   actualDeliveryTime: { type: Date, default: null },
   partnerRating: { type: Number, default: null },

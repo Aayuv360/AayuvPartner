@@ -1,7 +1,6 @@
 import { 
   DeliveryPartner,
   Customer, 
-  Address,
   Order, 
   Earning, 
   PartnerLocation,
@@ -9,8 +8,6 @@ import {
   type InsertDeliveryPartner,
   type ICustomer,
   type InsertCustomer,
-  type IAddress,
-  type InsertAddress,
   type IOrder, 
   type InsertOrder,
   type IEarning,
@@ -31,12 +28,6 @@ export interface IStorage {
   // Customer methods
   getCustomer(id: string): Promise<ICustomer | null>;
   createCustomer(customer: InsertCustomer): Promise<ICustomer>;
-  
-  // Address methods
-  getAddress(id: string): Promise<IAddress | null>;
-  getAddressesByCustomerId(customerId: string): Promise<IAddress[]>;
-  createAddress(address: InsertAddress): Promise<IAddress>;
-  updateAddress(id: string, updates: Partial<IAddress>): Promise<IAddress | null>;
   
   // Order methods
   getOrder(id: string): Promise<IOrder | null>;
@@ -87,58 +78,30 @@ export class DatabaseStorage implements IStorage {
       await customer1.save();
       await customer2.save();
 
-      // Sample addresses
-      const address1 = new Address({
-        customerId: customer1._id,
-        addressLine1: "Block A, Sector 18",
-        addressLine2: "Near Metro Station",
-        city: "Noida",
-        state: "Uttar Pradesh",
-        postalCode: "201301",
-        country: "India",
-        latitude: "28.5672",
-        longitude: "77.3248",
-        isDefault: true,
-        nickname: "Home"
-      });
-
-      const address2 = new Address({
-        customerId: customer2._id,
-        addressLine1: "DLF Phase 3",
-        addressLine2: "Block C, Tower 12",
-        city: "Gurgaon",
-        state: "Haryana",
-        postalCode: "122002",
-        country: "India",
-        latitude: "28.4595",
-        longitude: "77.0266",
-        isDefault: true,
-        nickname: "Home"
-      });
-
-      await address1.save();
-      await address2.save();
-
       // Sample orders
       const order1 = new Order({
         orderNumber: "ORD-2024-001",
         customerId: customer1._id,
-        deliveryAddressId: address1._id,
         status: "prepared",
         amount: "450.00",
         deliveryFee: "40.00",
         paymentMethod: "cash",
+        deliveryAddress: "Block A, Sector 18, Noida",
+        deliveryLatitude: "28.5672",
+        deliveryLongitude: "77.3248",
         estimatedDeliveryTime: 25,
       });
 
       const order2 = new Order({
         orderNumber: "ORD-2024-002",
         customerId: customer2._id,
-        deliveryAddressId: address2._id,
         status: "prepared",
         amount: "320.00",
         deliveryFee: "35.00",
         paymentMethod: "online",
+        deliveryAddress: "DLF Phase 3, Gurgaon",
+        deliveryLatitude: "28.4595",
+        deliveryLongitude: "77.0266",
         estimatedDeliveryTime: 30,
       });
 
@@ -193,44 +156,22 @@ export class DatabaseStorage implements IStorage {
     return await customer.save();
   }
 
-  // Address methods
-  async getAddress(id: string): Promise<IAddress | null> {
-    return await Address.findById(id);
-  }
 
-  async getAddressesByCustomerId(customerId: string): Promise<IAddress[]> {
-    return await Address.find({ customerId }).sort({ isDefault: -1, createdAt: -1 });
-  }
-
-  async createAddress(insertAddress: InsertAddress): Promise<IAddress> {
-    const address = new Address(insertAddress);
-    return await address.save();
-  }
-
-  async updateAddress(id: string, updates: Partial<IAddress>): Promise<IAddress | null> {
-    return await Address.findByIdAndUpdate(id, updates, { new: true });
-  }
 
   // Order methods
   async getOrder(id: string): Promise<IOrder | null> {
-    return await Order.findById(id)
-      .populate('customerId')
-      .populate('deliveryAddressId');
+    return await Order.findById(id).populate('customerId');
   }
 
   async getOrdersByPartnerId(partnerId: string): Promise<IOrder[]> {
-    return await Order.find({ deliveryPartnerId: partnerId })
-      .populate('customerId')
-      .populate('deliveryAddressId');
+    return await Order.find({ deliveryPartnerId: partnerId }).populate('customerId');
   }
 
   async getActiveOrderByPartnerId(partnerId: string): Promise<IOrder | null> {
     return await Order.findOne({ 
       deliveryPartnerId: partnerId, 
       status: { $nin: ['delivered', 'cancelled'] }
-    })
-    .populate('customerId')
-    .populate('deliveryAddressId');
+    }).populate('customerId');
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<IOrder> {
@@ -256,18 +197,14 @@ export class DatabaseStorage implements IStorage {
       updates.actualDeliveryTime = new Date();
     }
     
-    return await Order.findByIdAndUpdate(id, updates, { new: true })
-      .populate('customerId')
-      .populate('deliveryAddressId');
+    return await Order.findByIdAndUpdate(id, updates, { new: true }).populate('customerId');
   }
 
   async getAvailableOrders(): Promise<IOrder[]> {
     const orders = await Order.find({ 
       status: 'prepared', 
       deliveryPartnerId: null 
-    })
-    .populate('customerId')
-    .populate('deliveryAddressId');
+    }).populate('customerId');
     
     // Ensure _id is properly serialized
     return orders.map(order => ({

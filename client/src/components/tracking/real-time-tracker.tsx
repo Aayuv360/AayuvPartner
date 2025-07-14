@@ -68,14 +68,10 @@ export default function RealTimeTracker({ order }: RealTimeTrackerProps) {
       });
 
       // Create customer marker (delivery destination)
-      const deliveryAddress = (order as any).deliveryAddressId;
-      const hasCoordinates = (deliveryAddress?.latitude && deliveryAddress?.longitude) || 
-                            (order.deliveryLatitude && order.deliveryLongitude);
-      
-      if (hasCoordinates) {
+      if (order.deliveryLatitude && order.deliveryLongitude) {
         const customerPosition = {
-          lat: parseFloat(deliveryAddress?.latitude || order.deliveryLatitude || '0'),
-          lng: parseFloat(deliveryAddress?.longitude || order.deliveryLongitude || '0')
+          lat: parseFloat(order.deliveryLatitude),
+          lng: parseFloat(order.deliveryLongitude)
         };
 
         customerMarkerRef.current = new Marker({
@@ -125,14 +121,10 @@ export default function RealTimeTracker({ order }: RealTimeTrackerProps) {
     mapInstanceRef.current.panTo(newPosition);
     
     // Update route if customer location exists
-    const deliveryAddress = (order as any).deliveryAddressId;
-    const hasCoordinates = (deliveryAddress?.latitude && deliveryAddress?.longitude) || 
-                          (order.deliveryLatitude && order.deliveryLongitude);
-    
-    if (hasCoordinates) {
+    if (order.deliveryLatitude && order.deliveryLongitude) {
       const customerPosition = {
-        lat: parseFloat(deliveryAddress?.latitude || order.deliveryLatitude || '0'),
-        lng: parseFloat(deliveryAddress?.longitude || order.deliveryLongitude || '0')
+        lat: parseFloat(order.deliveryLatitude),
+        lng: parseFloat(order.deliveryLongitude)
       };
       updateRoute(newPosition, customerPosition);
     }

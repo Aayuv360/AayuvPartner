@@ -80,8 +80,18 @@ export default function Orders() {
             <h3 className="font-medium text-gray-900">{order.customer?.name || 'Customer'}</h3>
             <p className="text-sm text-gray-500 flex items-center mt-1">
               <MapPin className="w-4 h-4 mr-1" />
-              <span>{order.deliveryAddress}</span>
+              <span>
+                {(order as any).deliveryAddressId ? 
+                  `${(order as any).deliveryAddressId.addressLine1}, ${(order as any).deliveryAddressId.city}` :
+                  order.deliveryAddress || 'Address not available'
+                }
+              </span>
             </p>
+            {(order as any).deliveryAddressId?.latitude && (order as any).deliveryAddressId?.longitude && (
+              <p className="text-xs text-gray-400 mt-1">
+                📍 {(order as any).deliveryAddressId.latitude}, {(order as any).deliveryAddressId.longitude}
+              </p>
+            )}
             {order.estimatedDeliveryTime && (
               <p className="text-sm text-gray-500 flex items-center mt-1">
                 <Clock className="w-4 h-4 mr-1" />

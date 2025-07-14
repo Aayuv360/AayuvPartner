@@ -98,6 +98,7 @@ const partnerLocationSchema = new Schema({
 // Export Models
 export const DeliveryPartner = model('DeliveryPartner', deliveryPartnerSchema);
 export const Customer = model('Customer', customerSchema);
+export const Address = model('Address', addressSchema);
 export const Order = model('Order', orderSchema);
 export const Earning = model('Earning', earningSchema);
 export const PartnerLocation = model('PartnerLocation', partnerLocationSchema);
@@ -140,16 +141,28 @@ export const insertCustomerSchema = z.object({
   longitude: z.string().optional(),
 });
 
+export const insertAddressSchema = z.object({
+  customerId: z.string(),
+  addressLine1: z.string().min(1),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  postalCode: z.string().min(1),
+  country: z.string().default('India'),
+  latitude: z.string(),
+  longitude: z.string(),
+  isDefault: z.boolean().optional(),
+  nickname: z.string().optional(),
+});
+
 export const insertOrderSchema = z.object({
   customerId: z.string(),
   deliveryPartnerId: z.string().optional(),
+  deliveryAddressId: z.string(),
   status: z.string().optional(),
   amount: z.string(),
   deliveryFee: z.string(),
   paymentMethod: z.string(),
-  deliveryAddress: z.string(),
-  deliveryLatitude: z.string().optional(),
-  deliveryLongitude: z.string().optional(),
   estimatedDeliveryTime: z.number().optional(),
   actualDeliveryTime: z.date().optional(),
   partnerRating: z.number().optional(),
@@ -249,18 +262,33 @@ export interface ICustomer extends Document {
   longitude?: string;
 }
 
+export interface IAddress extends Document {
+  _id: string;
+  customerId: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  latitude: string;
+  longitude: string;
+  isDefault: boolean;
+  nickname?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface IOrder extends Document {
   _id: string;
   orderNumber: string;
   customerId: string;
   deliveryPartnerId?: string;
+  deliveryAddressId: string;
   status: string;
   amount: string;
   deliveryFee: string;
   paymentMethod: string;
-  deliveryAddress: string;
-  deliveryLatitude?: string;
-  deliveryLongitude?: string;
   estimatedDeliveryTime?: number;
   actualDeliveryTime?: Date;
   partnerRating?: number;
@@ -292,6 +320,8 @@ export type DeliveryPartnerType = IDeliveryPartner;
 export type InsertDeliveryPartner = z.infer<typeof insertDeliveryPartnerSchema>;
 export type CustomerType = ICustomer;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type AddressType = IAddress;
+export type InsertAddress = z.infer<typeof insertAddressSchema>;
 export type OrderType = IOrder;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type EarningType = IEarning;
